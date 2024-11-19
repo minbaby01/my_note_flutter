@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mynote/firebase_options.dart';
+import 'package:mynote/constants/routes.dart';
+import 'package:mynote/services/auth/auth_exceptions.dart';
+import 'package:mynote/services/auth/auth_service.dart';
+import 'package:mynote/utilities/dialogs/error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -35,8 +36,7 @@ class _LoginViewState extends State<LoginView> {
           title: const Text("Login"),
         ),
         body: FutureBuilder(
-          future: Firebase.initializeApp(
-              options: DefaultFirebaseOptions.currentPlatform),
+          future: AuthService.firebase().initialize(),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.done:
@@ -63,20 +63,30 @@ class _LoginViewState extends State<LoginView> {
                         final password = _password.text;
 
                         try {
-                          final userCredential = await FirebaseAuth.instance
-                              .signInWithEmailAndPassword(
-                                  email: email, password: password);
-                          print(userCredential);
-                        } on FirebaseAuthException catch (e) {
-                          switch (e.code) {
-                            case "invalid-credential":
-                              print("Email/Password incorrect");
-                              break;
-                            default:
+                          await AuthService.firebase()
+                              .logIn(email: email, password: password);
+                          final user = AuthService.firebase().currentUser;
+                          if (user?.isEmailVerified ?? false) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                noteRoute, (route) => false);
+                          } else {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                verifyEmailRoute, (route) => false);
                           }
+                        } on EmailPasswordIncorrectAuthException {
+                          await showErrorDialog(
+                              context, "Email/Password incorrect");
+                        } on GenericAuthExceptions {
+                          await showErrorDialog(context, "Auth error");
                         }
                       },
                       child: const Text('Login')),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            registerRoute, (route) => false);
+                      },
+                      child: const Text("Go register"))
                 ]);
 
               default:
