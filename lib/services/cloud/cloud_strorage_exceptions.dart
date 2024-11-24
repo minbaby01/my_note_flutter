@@ -5,10 +5,10 @@ class CloudStrorageExceptions implements Exception {
   const CloudStrorageExceptions();
 }
 
-class CloudNotCreateNoteException extends CloudStrorageExceptions {}
+class CouldNotCreateNoteException extends CloudStrorageExceptions {}
 
-class CloudNotGetAllNotesException extends CloudStrorageExceptions {}
+class CouldNotGetAllNotesException extends CloudStrorageExceptions {}
 
-class CloudNotUpdateNoteException extends CloudStrorageExceptions {}
+class CouldNotUpdateNoteException extends CloudStrorageExceptions {}
 
-class CloudNotDeleteException extends CloudStrorageExceptions {}
+class CouldNotDeleteException extends CloudStrorageExceptions {}
